@@ -1,0 +1,45 @@
+neuron gl_neuron:
+
+	state:
+		V_m mV = V_r
+	end
+
+	equations:
+		V_m' = (-V_m + V_r)/tau_m + I_inj + I_syn
+		#shape phi_v = pow(gamma * (V_m-V_t),r) + delta # cant use shape as par
+	end
+
+	# Initialize with RS parameters
+	parameters:
+		# Neuron parameters
+		V_r mV = -65.0mV # Reset potencial
+		V_t mV = -64.5mV # Threshold potencial
+		V_s mV = -37.5mV # Saturation potencial
+		#I_inj pA = 0 pA
+		#I_syn pA = 0 pA
+		tau_m ms = 10 ms
+		# phi_v parameters (no dimension)
+		r real = 1.0     
+		gamma mV**-1 = 0.037 mV**-1
+		delta real= 0.0
+	end
+
+	input:
+		I_inj <- current
+		I_syn <- spike 
+	end
+
+	output: spike
+
+	update:
+		integrate_odes()
+		rnd_number real = random()
+		if  V_m > V_t and V_m <= V_s and rnd_number < (pow(gamma * (V_m-V_t),r) + delta) or V_m > V_s:
+			emit_spike()
+			V_m = V_r
+		end
+	end
+
+end
+		
+
