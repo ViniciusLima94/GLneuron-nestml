@@ -1,0 +1,35 @@
+neuron gl_neuron:
+  state:
+    V_m mV = V_r
+  end
+  equations:
+    V_m' = ((-V_m)+V_r)/tau_m+I_inj+I_syn
+  end
+  # Initialize with RS parameters
+  parameters:
+    # Neuron parameters
+    V_r mV = (-65.0)
+    V_t mV = (-64.5)
+    V_s mV = (-37.5)
+    #I_inj pA = 0 pA#I_syn pA = 0 pA
+    tau_m ms = 10
+    # phi_v parameters (no dimension)
+    r real = 1.0
+    gamma 1 / kV = (0.037)**((-1))
+    delta real = 0.0
+  end
+  input:
+    I_inj <- current
+    I_syn <- spike
+  end
+  output: spike
+  update:
+    integrate_odes()
+    rnd_number real = random()
+    if (((V_m>V_t)and(V_m<=V_s))and(rnd_number<(pow(gamma*(V_m-V_t), r)+delta)))or(V_m>V_s):
+      emit_spike()
+      V_m = V_r
+    end
+  
+  end
+end
